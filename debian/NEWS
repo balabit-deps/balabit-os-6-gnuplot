@@ -1,0 +1,27 @@
+gnuplot (4.6.5-7) unstable; urgency=medium
+
+  /usr/bin/gnuplot binary is managed now through update-alternatives
+  mechanism and depends on installed gnuplot configuration
+  (-nox, -x11 or -qt).
+
+  gnuplot version 4 provides also /usr/bin/gnuplot4 symlink. 
+  It points on installed gnuplot binary variant (-nox, -x11 or -qt).
+
+  To be sure you are using gnuplot of version 4 please type
+  gnuplot4 in command line.
+
+  These changes are needed due to a new gnuplot major version 5 and
+  allows one to install both versions simultaneously.
+
+ -- Anton Gladky <gladk@debian.org>  Sat, 12 Jul 2014 10:46:21 +0200
+
+gnuplot (4.6.5-4) unstable; urgency=medium
+
+  We stop to provide wxt-terminal because wxwidgets 3.0 is not compatible
+  with gnuplot [1], [2]. wxt-terminal will be enabled again if the bug
+  will be fixed.
+
+  [1] https://sourceforge.net/p/gnuplot/bugs/1401
+  [2] https://bugs.debian.org/750045
+
+ -- Anton Gladky <gladk@debian.org>  Wed, 04 Jun 2014 22:46:22 +0200

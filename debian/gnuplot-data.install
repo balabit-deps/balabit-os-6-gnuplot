@@ -1,0 +1,2 @@
+pm3d/contrib/* usr/share/gnuplot/pm3d
+debian/tmp/QT/usr/share/gnuplot/gnuplot/ usr/share/gnuplot

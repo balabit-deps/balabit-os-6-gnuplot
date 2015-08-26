@@ -1,0 +1,87 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ --parallel --with autoreconf
+
+export DEB_BUILD_MAINT_OPTIONS := hardening=+all
+export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
+# Tell compiler where should find lua headers
+export DEB_CFLAGS_MAINT_APPEND = -I/usr/include/lua5.1
+
+BUILDDIR_NOX = $(CURDIR)/debian/build-nox
+BUILDDIR_X11 = $(CURDIR)/debian/build-x11
+BUILDDIR_QT = $(CURDIR)/debian/build-qt
+MANPNOX = $(CURDIR)/debian/gnuplot-nox/usr/share/man/man1/gnuplot4-nox.1
+
+conf_opts += \
+	--prefix=/usr \
+	--mandir=\$${prefix}/share/man \
+	--infodir=\$${prefix}/share/info \
+	--libexecdir=\$${prefix}/lib/gnuplot \
+	--datadir=\$${prefix}/share/gnuplot \
+	--with-gihdir=\$${prefix}/share/gnuplot \
+	--without-lasergnu \
+	--with-png \
+	--with-gd \
+	--without-lisp-files \
+	--without-linux-vga \
+	--with-readline=bsd
+
+override_dh_auto_configure:
+	mkdir -p $(BUILDDIR_NOX)
+	cd $(BUILDDIR_NOX);  ./../../configure $(conf_opts) --without-x --disable-wxwidgets --disable-wxt
+	mkdir -p $(BUILDDIR_X11)
+	cd $(BUILDDIR_X11); ../../configure $(conf_opts) --without-qt --disable-wxt
+	mkdir -p $(BUILDDIR_QT)
+	cd $(BUILDDIR_QT); ../../configure $(conf_opts)  --enable-qt --disable-wxt
+
+override_dh_auto_build:
+	dh_auto_build -- -C $(BUILDDIR_NOX)/src
+	dh_auto_build -- -C $(BUILDDIR_X11) pkglibexecdir='$$(libexecdir)'
+	dh_auto_build -- -C $(BUILDDIR_QT) pkglibexecdir='$$(libexecdir)'
+	cp -f term/PostScript/prologue.ps docs/psdoc/
+	dh_auto_build -- -C $(BUILDDIR_X11)/docs ps info gpcard.ps
+	dh_auto_build -- -C $(BUILDDIR_X11)/tutorial tutorial.dvi tutorial.ps
+	dh_auto_build -- -C $(BUILDDIR_X11)/demo
+	dh_auto_build -- -C docs/psdoc ps_fontfile_doc.ps
+	mkdir -p docs/htmldocs
+	$(MAKEINFO) --html --force --output=docs/htmldocs/ docs/gnuplot.texi
+
+override_dh_auto_install:
+	$(MAKE) -C $(BUILDDIR_NOX) install DESTDIR=$(CURDIR)/debian/tmp/NOX/ \
+		pkglibexecdir='$$(libexecdir)'
+	mv $(CURDIR)/debian/tmp/NOX/usr/bin/gnuplot $(CURDIR)/debian/tmp/NOX/usr/bin/gnuplot4-nox
+	mv $(CURDIR)/debian/tmp/NOX/usr/share/man/man1/gnuplot.1 $(CURDIR)/debian/tmp/NOX/usr/share/man/man1/gnuplot4-nox.1
+	mv $(CURDIR)/debian/tmp/NOX/usr/share/gnuplot/gnuplot.gih $(CURDIR)/debian/tmp/NOX/usr/share/gnuplot/gnuplot4-nox.gih
+	$(MAKE) -C $(BUILDDIR_X11) install DESTDIR=$(CURDIR)/debian/tmp/X11/ \
+		pkglibexecdir='$$(libexecdir)'
+	mv $(CURDIR)/debian/tmp/X11/usr/bin/gnuplot $(CURDIR)/debian/tmp/X11/usr/bin/gnuplot4-x11
+	mv $(CURDIR)/debian/tmp/X11/usr/share/man/man1/gnuplot.1 $(CURDIR)/debian/tmp/X11/usr/share/man/man1/gnuplot4-x11.1
+	mv $(CURDIR)/debian/tmp/X11/usr/share/gnuplot/gnuplot.gih $(CURDIR)/debian/tmp/X11/usr/share/gnuplot/gnuplot4-x11.gih
+	$(MAKE) -C $(BUILDDIR_QT) install DESTDIR=$(CURDIR)/debian/tmp/QT/ \
+		pkglibexecdir='$$(libexecdir)'
+	mv $(CURDIR)/debian/tmp/QT/usr/bin/gnuplot $(CURDIR)/debian/tmp/QT/usr/bin/gnuplot4-qt
+	mv $(CURDIR)/debian/tmp/QT/usr/share/man/man1/gnuplot.1 $(CURDIR)/debian/tmp/QT/usr/share/man/man1/gnuplot4-qt.1
+	mv $(CURDIR)/debian/tmp/QT/usr/share/gnuplot/gnuplot.gih $(CURDIR)/debian/tmp/QT/usr/share/gnuplot/gnuplot4-qt.gih
+
+override_dh_auto_test:
+	cp -f $(BUILDDIR_X11)/demo/binary* ./demo/
+	cd demo; $(BUILDDIR_NOX)/src/gnuplot all.dem </dev/null
+
+override_dh_installinfo:
+	dh_installinfo -pgnuplot-doc $(BUILDDIR_X11)/docs/gnuplot.info*
+
+override_installchangelogs:
+	dh_installchangelogs -pgnuplot-doc ChangeLog
+
+override_dh_compress-indep:
+	dh_compress -Xall.dem
+	cd debian/gnuplot-doc/usr/share/doc/gnuplot-doc/examples/; patch -p1 < $(CURDIR)/debian/fix_examples/fix_examples.diff
+
+override_dh_installman-arch:
+	dh_installman
+	# Fix manpage for nox-version. (Closes: #744218)
+	sed -i 's/\[X11 options\] //g' $(MANPNOX)
+	sed -i 's/plotting program/plotting program (no-X version)/g' $(MANPNOX)
+	sed -i '/SH\ X11\ OPTIONS/,/command line\./ d' $(MANPNOX)

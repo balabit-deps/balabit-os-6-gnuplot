@@ -1,0 +1,37 @@
+Description: force makeinfo not to fail on warnings. Remove mkinstalldirs.
+Bug-Debian: 711067
+Author: Anton Gladky <gladk@debian.org>
+Last-Update: 2013-06-04
+
+Index: gnuplot/docs/Makefile.in
+===================================================================
+--- gnuplot.orig/docs/Makefile.in
++++ gnuplot/docs/Makefile.in
+@@ -390,7 +390,7 @@ wxhelp/doc2html: wxhelp/doc2html.o termd
+ info: gnuplot.info
+ 
+ gnuplot.info: gnuplot.texi
+-	$(MAKEINFO) -I$(srcdir) $< --no-split --output=$@
++	$(MAKEINFO) -I$(srcdir) $< --no-split --force --output=$@
+ 
+ # Thanks to Bruce Ravel for doc2texi.el!
+ gnuplot.texi $(srcdir)/gnuplot-eldoc.el $(srcdir)/gnuplot-eldoc.elc: $(srcdir)/doc2texi.el $(srcdir)/gnuplot.doc
+@@ -454,18 +454,15 @@ checkdoc.o: checkdoc.c $(BUILT_SOURCES)
+ install: install-gih install-pdf
+ 
+ install-gih: gnuplot.gih
+-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(GIHDIR)
+ 	$(INSTALL_DATA) gnuplot.gih $(DESTDIR)$(GIHDIR)/gnuplot.gih
+ 
+ install-pdf:
+-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(GIHDIR)
+ 	if test -f gnuplot.pdf ; then \
+ 	    $(INSTALL_DATA) gnuplot.pdf $(DESTDIR)$(GIHDIR)/gnuplot.pdf; \
+ 	fi
+ 
+ install-info: gnuplot.info gnuplot-eldoc.el gnuplot-eldoc.elc
+ 	@if test "$(EMACS)" != no; then \
+-	    $(top_srcdir)/mkinstalldirs $(DESTDIR)$(infodir) $(DESTDIR)$(lispdir); \
+ 	    $(INSTALL_DATA) gnuplot.info $(DESTDIR)$(infodir)/gnuplot.info; \
+ 	    $(INSTALL_DATA) gnuplot-eldoc.el $(DESTDIR)$(lispdir)/gnuplot-eldoc.el; \
+ 	    $(INSTALL_DATA) gnuplot-eldoc.elc $(DESTDIR)$(lispdir)/gnuplot-eldoc.elc; \
