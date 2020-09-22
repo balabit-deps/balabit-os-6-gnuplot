@@ -1,5 +1,6 @@
 Source: gnuplot
-Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.org>
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+XSBC-Original-Maintainer: Debian Science Team <debian-science-maintainers@lists.alioth.debian.org>
 Uploaders: Anton Gladky <gladk@debian.org>
 Section: math
 Testsuite: autopkgtest

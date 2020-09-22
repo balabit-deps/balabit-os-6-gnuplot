@@ -1,3 +1,4 @@
 04_fix_libexecdir.diff
 05_default_gd_font.diff
 09_force_texinfo.patch
+CVE-2018-19490-19491-19492.patch

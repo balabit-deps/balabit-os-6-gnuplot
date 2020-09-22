@@ -1,3 +1,14 @@
+gnuplot (4.6.6-3ubuntu0.1) xenial-security; urgency=medium
+
+  * SECURITY UPDATE: Heap-based buffer overflows
+    - debian/patches/CVE-2018-19490-19491-19492.patch: various overflow cases
+      found by fuzzing.
+    - CVE-2018-19490
+    - CVE-2018-19491
+    - CVE-2018-19492
+
+ -- Paulo Flabiano Smorigo <pfsmorigo@canonical.com>  Tue, 22 Sep 2020 17:21:59 +0000
+
 gnuplot (4.6.6-3) unstable; urgency=medium
 
   * [5b6c81a] Make gnuplot be dependent on version 5.
